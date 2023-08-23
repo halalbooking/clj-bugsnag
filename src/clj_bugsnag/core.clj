@@ -67,7 +67,7 @@
     (str thing)))
 
 (defn exception->json
-  [exception {:keys [project-ns context group severity severity_reason user version environment meta] :as options}]
+  [exception {:keys [project-ns context group severity severity_reason unhandled user version environment meta] :as options}]
   (let [ex            (parse-exception exception)
         message       (:message ex)
         class-name    (.getName ^Class (:class ex))
@@ -85,14 +85,16 @@
      :notifier {:name    "com.splashfinancial/clj-bugsnag"
                 :version "1.1.0"
                 :url     "https://github.com/SplashFinancial/clj-bugsnag"}
-     :events   [{:payloadVersion "2"
-                 :exceptions     [{:errorClass class-name
+     :payloadVersion "4.0"
+     :events   [{:exceptions     [{:errorClass class-name
                                    :message    message
                                    :stacktrace stacktrace}]
+                 :breadcrumbs    []
                  :context        context
                  :groupingHash   grouping-hash
                  :severity       (or severity "error")
                  :severity_reason (or severity_reason {:type UNHANDLED_EXCEPTION})
+                 :unhandled      (or unhandled true)
                  :user           user
                  :app            {:version      (or version (git-rev))
                                   :releaseStage (or environment "production")}
