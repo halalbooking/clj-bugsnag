@@ -29,5 +29,6 @@
                               " "
                               (:uri req))]
            (core/notify ex (merge {:context verb-path
+                                   :severity_reason {:type core/UNHANDLED_EXCEPTION}
                                    :user    (catch-call-map? user-fn req)} req-data))
            (throw ex)))))))

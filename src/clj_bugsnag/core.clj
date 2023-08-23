@@ -8,6 +8,10 @@
             [clojure.string :as string]
             [clojure.walk :as walk]))
 
+(def UNHANDLED_EXCEPTION "unhandledException")
+(def UNHANDLED_EXCEPTION_MIDDLEWARE "unhandledExceptionMiddleware")
+(def HANDLED_EXCEPTION "handledException")
+
 (defn get-git-rev
   []
   (try
@@ -63,7 +67,7 @@
     (str thing)))
 
 (defn exception->json
-  [exception {:keys [project-ns context group severity user version environment meta] :as options}]
+  [exception {:keys [project-ns context group severity severity_reason user version environment meta] :as options}]
   (let [ex            (parse-exception exception)
         message       (:message ex)
         class-name    (.getName ^Class (:class ex))
@@ -88,6 +92,7 @@
                  :context        context
                  :groupingHash   grouping-hash
                  :severity       (or severity "error")
+                 :severity_reason (or severity_reason {:type UNHANDLED_EXCEPTION})
                  :user           user
                  :app            {:version      (or version (git-rev))
                                   :releaseStage (or environment "production")}
@@ -113,6 +118,8 @@
      - :severity - The severity of the error.
                    Must be one of `info`, `warning`, and `error`.
                    Defaults to `error`
+     - :severity_reason - Severity reason (used for Handled/Unhandled feature).
+                          Defaults to {:type UNHANDLED_EXCEPTION}
      - :user  - A string or map of facets representing the active end user when the error occurred.
                 Defaults to nil
      - :version - The application version running when the error was reported.
