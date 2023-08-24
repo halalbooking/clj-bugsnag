@@ -93,8 +93,8 @@
                  :context        context
                  :groupingHash   grouping-hash
                  :severity       (or severity "error")
-                 :severity_reason (or severity_reason {:type UNHANDLED_EXCEPTION})
-                 :unhandled      (or unhandled true)
+                 :severity_reason (or severity_reason {:type HANDLED_EXCEPTION})
+                 :unhandled      (or unhandled false)
                  :user           user
                  :app            {:version      (or version (git-rev))
                                   :releaseStage (or environment "production")}
@@ -121,7 +121,8 @@
                    Must be one of `info`, `warning`, and `error`.
                    Defaults to `error`
      - :severity_reason - Severity reason (used for Handled/Unhandled feature).
-                          Defaults to {:type UNHANDLED_EXCEPTION}
+                          Defaults to {:type HANDLED_EXCEPTION}
+     - :unhandled - Handled/Unhandled error flag, default to `false`
      - :user  - A string or map of facets representing the active end user when the error occurred.
                 Defaults to nil
      - :version - The application version running when the error was reported.
