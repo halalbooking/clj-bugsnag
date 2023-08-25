@@ -19,12 +19,21 @@
 
 (t/deftest exception->json-test
   (bond/with-stub! [[impl/load-bugsnag-api-key! (fn [_] "some-api-key")]]
-    (t/testing "The resulting json map includes ExceptionInfo's ex-data"
+    (t/testing "The resulting json map includes ExceptionInfo's ex-data, unhanled and severity_reason are set to defaults"
       (let [json (core/exception->json (ex-info "BOOM" {:wat "?!"}) {:meta {:reason println}})]
         (t/is (= "?!" (-> json :events first (get-in [:metaData "ex-data" ":wat"]))))
         (t/is (= "BOOM" (-> json :events first :groupingHash)))
         (t/is (= "some-api-key" (:apiKey json)))
+        (t/is (= "4.0" (:payloadVersion json)))
+        (t/is (= false (-> json :events first :unhandled)))
+        (t/is (= "handledException" (-> json :events first (get-in [:severity_reason :type]))))
         (t/is (cs/starts-with? (-> json :events first (get-in [:metaData ":reason"])) "clojure.core$println@"))))
+    (t/testing "The resulting json map includes unhandled and severity_reason params"
+      (let [json (core/exception->json (ex-info "BOOM" {:wat "?!"}) {:meta {:reason println} :unhandled true :severity_reason {:type "unhandledException"}})]
+        (t/is (= true (-> json :events first :unhandled)))
+        (t/is (= "unhandledException" (-> json :events first (get-in [:severity_reason :type]))))
+        (t/is (= "BOOM" (-> json :events first :groupingHash)))))
+
     (t/testing "Stacktraces include the source code that threw"
       (let [crash (try
                     (make-crash)
