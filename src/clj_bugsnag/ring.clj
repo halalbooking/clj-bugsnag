@@ -24,6 +24,7 @@
        (handler-fn req)
        (catch Throwable ex
          (let [user-fn   (get data :user-from-request (constantly nil))
+               group-fn  (get data :grouping-hash-from-ex (constantly nil))
                req-data  (update-in data [:meta] merge {:request (dissoc req :body)})
                verb-path (str (-> req (get :request-method :unknown) name .toUpperCase)
                               " "
@@ -31,5 +32,6 @@
            (core/notify ex (merge {:context verb-path
                                    :severity_reason {:type core/UNHANDLED_EXCEPTION_MIDDLEWARE}
                                    :unhandled true
+                                   :group   (group-fn ex req)
                                    :user    (catch-call-map? user-fn req)} req-data))
            (throw ex)))))))
