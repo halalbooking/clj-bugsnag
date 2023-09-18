@@ -23,15 +23,18 @@
      (try
        (handler-fn req)
        (catch Throwable ex
+         (println "wrap-bugsnag 0 " ex req)
          (let [user-fn   (get data :user-from-request (constantly nil))
                group-fn  (get data :grouping-hash-from-ex (constantly nil))
                req-data  (update-in data [:meta] merge {:request (dissoc req :body)})
                verb-path (str (-> req (get :request-method :unknown) name .toUpperCase)
                               " "
                               (:uri req))]
-           (core/notify ex (merge {:context verb-path
+           (println "wrap-bugsnag catch :: " verb-path " :: " (group-fn ex req))
+           (let [bs-result (core/notify ex (merge {:context verb-path
                                    :severity_reason {:type core/UNHANDLED_EXCEPTION_MIDDLEWARE}
                                    :unhandled true
                                    :group   (group-fn ex req)
-                                   :user    (catch-call-map? user-fn req)} req-data))
+                                   :user    (catch-call-map? user-fn req)} req-data))]
+             (println "result" bs-result))
            (throw ex)))))))
