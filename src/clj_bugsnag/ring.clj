@@ -31,6 +31,7 @@
                               " "
                               (:uri req))]
            (println "wrap-bugsnag catch :: " verb-path " :: " (group-fn ex req))
+           (println req-data)
            (let [bs-result (core/notify ex (merge {:context verb-path
                                    :severity_reason {:type core/UNHANDLED_EXCEPTION_MIDDLEWARE}
                                    :unhandled true
