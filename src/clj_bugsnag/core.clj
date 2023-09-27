@@ -141,7 +141,6 @@
   ([exception {:keys [suppress-bugsnag-response?]
                :as   options}]
    (let [params (exception->json exception options)
-         _ (println "bugsnag params " params)
          url    "https://notify.bugsnag.com/"
          resp   (http/post url {:form-params  params :content-type :json})]
      (if suppress-bugsnag-response?
